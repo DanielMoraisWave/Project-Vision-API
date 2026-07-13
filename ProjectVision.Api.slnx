@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ProjectVision.Api/ProjectVision.Api.csproj" />
+  <Project Path="ProjectVision.Tests/ProjectVision.Tests.csproj" Id="6cb15685-72e5-4228-af3d-6700852dad7a" />
+</Solution>

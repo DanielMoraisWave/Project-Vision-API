@@ -1,0 +1,173 @@
+@ProjectVision_Api_HostAddress = https://localhost:7150
+@ExistingProductId = 100000
+@CreatedProductId = 100003
+
+### 1. Get all products
+GET {{ProjectVision_Api_HostAddress}}/api/products
+Accept: application/json
+
+###
+
+### 2. Get one existing product
+GET {{ProjectVision_Api_HostAddress}}/api/products/{{ExistingProductId}}
+Accept: application/json
+
+###
+
+### 3. Get a product that does not exist
+GET {{ProjectVision_Api_HostAddress}}/api/products/999999
+Accept: application/json
+
+###
+
+### 4. Create a product
+### Copy the generated ID from the response
+### and update CreatedProductId at the top of this file
+POST {{ProjectVision_Api_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Gaming Monitor",
+  "description": "27-inch gaming monitor",
+  "price": 299.99,
+  "stock": 20
+}
+
+###
+
+### 5. Test invalid product creation
+### Expected: 400 Bad Request
+POST {{ProjectVision_Api_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "",
+  "description": "Invalid product",
+  "price": -10,
+  "stock": -5
+}
+
+###
+
+### 6. Get the created product
+### Update CreatedProductId first
+GET {{ProjectVision_Api_HostAddress}}/api/products/{{CreatedProductId}}
+Accept: application/json
+
+###
+
+### 7. Update the created product
+PUT {{ProjectVision_Api_HostAddress}}/api/products/{{CreatedProductId}}
+Content-Type: application/json
+
+{
+  "name": "Gaming Monitor Updated",
+  "description": "Updated 27-inch gaming monitor",
+  "price": 279.99,
+  "stock": 25
+}
+
+###
+
+### 8. Update a product that does not exist
+### Expected: 404 Not Found
+PUT {{ProjectVision_Api_HostAddress}}/api/products/999999
+Content-Type: application/json
+
+{
+  "name": "Missing Product",
+  "description": "This product does not exist",
+  "price": 99.99,
+  "stock": 10
+}
+
+###
+
+### 9. Add stock
+POST {{ProjectVision_Api_HostAddress}}/api/products/{{ExistingProductId}}/add-to-stock/5
+
+###
+
+### 10. Add invalid stock quantity
+### Expected: 400 Bad Request
+POST {{ProjectVision_Api_HostAddress}}/api/products/{{ExistingProductId}}/add-to-stock/0
+
+###
+
+### 11. Add stock to missing product
+### Expected: 404 Not Found
+POST {{ProjectVision_Api_HostAddress}}/api/products/999999/add-to-stock/5
+
+###
+
+### 12. Decrement stock
+POST {{ProjectVision_Api_HostAddress}}/api/products/{{ExistingProductId}}/decrement-stock/3
+
+###
+
+### 13. Decrement more stock than is available
+### Expected: 409 Conflict
+POST {{ProjectVision_Api_HostAddress}}/api/products/{{ExistingProductId}}/decrement-stock/99999
+
+###
+
+### 14. Decrement invalid stock quantity
+### Expected: 400 Bad Request
+POST {{ProjectVision_Api_HostAddress}}/api/products/{{ExistingProductId}}/decrement-stock/0
+
+###
+
+### 15. Decrement stock from missing product
+### Expected: 404 Not Found
+POST {{ProjectVision_Api_HostAddress}}/api/products/999999/decrement-stock/2
+
+###
+
+### 16. Search by partial product name
+GET {{ProjectVision_Api_HostAddress}}/api/products/search?name=mouse
+Accept: application/json
+
+###
+
+### 17. Search by another partial product name
+GET {{ProjectVision_Api_HostAddress}}/api/products/search?name=key
+Accept: application/json
+
+###
+
+### 18. Search without a name
+### Expected: 400 Bad Request
+GET {{ProjectVision_Api_HostAddress}}/api/products/search?name=
+Accept: application/json
+
+###
+
+### 19. Find products within a stock range
+GET {{ProjectVision_Api_HostAddress}}/api/products/stock-level?min=5&max=30
+Accept: application/json
+
+###
+
+### 20. Invalid stock range
+### Expected: 400 Bad Request
+GET {{ProjectVision_Api_HostAddress}}/api/products/stock-level?min=30&max=5
+Accept: application/json
+
+###
+
+### 21. Negative stock range
+### Expected: 400 Bad Request
+GET {{ProjectVision_Api_HostAddress}}/api/products/stock-level?min=-1&max=20
+Accept: application/json
+
+###
+
+### 22. Delete the created product
+### Run this test last
+DELETE {{ProjectVision_Api_HostAddress}}/api/products/{{CreatedProductId}}
+
+###
+
+### 23. Delete the same product again
+### Expected: 404 Not Found
+DELETE {{ProjectVision_Api_HostAddress}}/api/products/{{CreatedProductId}}

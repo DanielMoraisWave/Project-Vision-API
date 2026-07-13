@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Project Vision API Tester</title>
+
+    <style>
+        body {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input,
+        textarea,
+        button {
+            padding: 9px;
+            font-size: 14px;
+        }
+
+        input,
+        textarea {
+            flex: 1;
+            min-width: 150px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+        }
+
+        textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        button {
+            border: none;
+            border-radius: 4px;
+            background: #333;
+            color: white;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: #555;
+            }
+
+        .delete-button {
+            background: #a51d1d;
+        }
+
+        pre {
+            min-height: 120px;
+            padding: 15px;
+            overflow: auto;
+            color: #eee;
+            background: #222;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Project Vision API Tester</h1>
+
+    <div class="section">
+        <h2>Get products</h2>
+
+        <div class="row">
+            <button onclick="getAllProducts()">Get all products</button>
+        </div>
+
+        <div class="row">
+            <input id="getProductId"
+                   type="number"
+                   placeholder="Product ID"
+                   value="100000">
+
+            <button onclick="getProductById()">Get product by ID</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Create product</h2>
+
+        <div class="row">
+            <input id="createName" placeholder="Name">
+            <input id="createPrice" type="number" step="0.01" placeholder="Price">
+            <input id="createStock" type="number" placeholder="Stock">
+        </div>
+
+        <div class="row">
+            <textarea id="createDescription"
+                      placeholder="Description"></textarea>
+        </div>
+
+        <button onclick="createProduct()">Create product</button>
+    </div>
+
+    <div class="section">
+        <h2>Update product</h2>
+
+        <div class="row">
+            <input id="updateId" type="number" placeholder="Product ID">
+            <input id="updateName" placeholder="Name">
+            <input id="updatePrice" type="number" step="0.01" placeholder="Price">
+            <input id="updateStock" type="number" placeholder="Stock">
+        </div>
+
+        <div class="row">
+            <textarea id="updateDescription"
+                      placeholder="Description"></textarea>
+        </div>
+
+        <button onclick="updateProduct()">Update product</button>
+    </div>
+
+    <div class="section">
+        <h2>Stock</h2>
+
+        <div class="row">
+            <input id="stockProductId"
+                   type="number"
+                   placeholder="Product ID"
+                   value="100000">
+
+            <input id="stockQuantity"
+                   type="number"
+                   placeholder="Quantity"
+                   value="1">
+        </div>
+
+        <div class="row">
+            <button onclick="addStock()">Add stock</button>
+            <button onclick="decrementStock()">Decrement stock</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Search</h2>
+
+        <div class="row">
+            <input id="searchName"
+                   placeholder="Partial product name"
+                   value="mouse">
+
+            <button onclick="searchByName()">Search by name</button>
+        </div>
+
+        <div class="row">
+            <input id="minimumStock"
+                   type="number"
+                   placeholder="Minimum stock"
+                   value="0">
+
+            <input id="maximumStock"
+                   type="number"
+                   placeholder="Maximum stock"
+                   value="30">
+
+            <button onclick="searchByStock()">Search by stock</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Delete product</h2>
+
+        <div class="row">
+            <input id="deleteProductId"
+                   type="number"
+                   placeholder="Product ID">
+
+            <button class="delete-button"
+                    onclick="deleteProduct()">
+                Delete product
+            </button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Response</h2>
+
+        <pre id="responseOutput">No request sent yet.</pre>
+    </div>
+
+    <script>
+
+        const output = document.getElementById("responseOutput");
+
+        async function sendRequest(url, options = {}) {
+            output.textContent = "Loading...";
+
+            try {
+                const response = await fetch(url, options);
+                const responseText = await response.text();
+
+                let responseBody;
+
+                try {
+                    responseBody = responseText
+                        ? JSON.parse(responseText)
+                        : null;
+                } catch {
+                    responseBody = responseText;
+                }
+
+                output.textContent = JSON.stringify(
+                    {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: responseBody
+                    },
+                    null,
+                    2
+                );
+            } catch (error) {
+                output.textContent = JSON.stringify(
+                    {
+                        error: error.message
+                    },
+                    null,
+                    2
+                );
+            }
+        }
+
+        function getNumber(id) {
+            return Number(document.getElementById(id).value);
+        }
+
+        function getText(id) {
+            return document.getElementById(id).value;
+        }
+
+        function getAllProducts() {
+            return sendRequest("/api/products");
+        }
+
+        function getProductById() {
+            const id = getNumber("getProductId");
+
+            return sendRequest(`/api/products/${id}`);
+        }
+
+        function createProduct() {
+            const product = {
+                name: getText("createName"),
+                description: getText("createDescription"),
+                price: getNumber("createPrice"),
+                stock: getNumber("createStock")
+            };
+
+            return sendRequest("/api/products", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(product)
+            });
+        }
+
+        function updateProduct() {
+            const id = getNumber("updateId");
+
+            const product = {
+                name: getText("updateName"),
+                description: getText("updateDescription"),
+                price: getNumber("updatePrice"),
+                stock: getNumber("updateStock")
+            };
+
+            return sendRequest(`/api/products/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(product)
+            });
+        }
+
+        function addStock() {
+            const id = getNumber("stockProductId");
+            const quantity = getNumber("stockQuantity");
+
+            return sendRequest(
+                `/api/products/${id}/add-to-stock/${quantity}`,
+                {
+                    method: "POST"
+                }
+            );
+        }
+
+        function decrementStock() {
+            const id = getNumber("stockProductId");
+            const quantity = getNumber("stockQuantity");
+
+            return sendRequest(
+                `/api/products/${id}/decrement-stock/${quantity}`,
+                {
+                    method: "POST"
+                }
+            );
+        }
+
+        function searchByName() {
+            const name = encodeURIComponent(getText("searchName"));
+
+            return sendRequest(
+                `/api/products/search?name=${name}`
+            );
+        }
+
+        function searchByStock() {
+            const min = getNumber("minimumStock");
+            const max = getNumber("maximumStock");
+
+            return sendRequest(
+                `/api/products/stock-level?min=${min}&max=${max}`
+            );
+        }
+
+        async function deleteProduct() {
+            const id = getNumber("deleteProductId");
+
+            const confirmed = confirm(
+                `Delete product ${id}?`
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            return sendRequest(`/api/products/${id}`, {
+                method: "DELETE"
+            });
+        }
+    </script>
+</body>
+</html>
